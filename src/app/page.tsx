@@ -4,53 +4,7 @@ import { ALCOHOLIC_DRINKS, HYDRATION_DRINKS, WATER_MULTIPLIER } from "@/types/dr
 import { useHydrationSession } from "@/hooks/useHydrationSession";
 import { useEffect, useRef, useState } from "react";
 
-// ============================================================
-// 進捗バーコンポーネント
-// ============================================================
-function ProgressRing({
-  percentage,
-  size = 180,
-}: {
-  percentage: number;
-  size?: number;
-}) {
-  const radius = (size - 20) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percentage / 100) * circumference;
-  const clampedPct = Math.min(100, Math.max(0, percentage));
-
-  const color =
-    clampedPct >= 100
-      ? "#10B981"
-      : clampedPct >= 60
-      ? "#F59E0B"
-      : "#EF4444";
-
-  return (
-    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke="rgba(255,255,255,0.1)"
-        strokeWidth={10}
-      />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke={color}
-        strokeWidth={10}
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: "stroke-dashoffset 0.6s ease, stroke 0.4s ease" }}
-      />
-    </svg>
-  );
-}
+import { WaterGlasses } from "@/components/WaterGlasses";
 
 // ============================================================
 // トースト通知
@@ -93,13 +47,6 @@ export default function Home() {
     );
   };
 
-  const pct =
-    session.total_water_required_ml === 0
-      ? 100
-      : (session.total_water_consumed_ml /
-          session.total_water_required_ml) *
-        100;
-
   const isComplete =
     session.total_water_required_ml > 0 &&
     session.remaining_water_ml === 0;
@@ -132,29 +79,14 @@ export default function Home() {
 
       {/* 進捗セクション */}
       <section className="progress-section" aria-label="水分補給の進捗">
-        <div className="ring-wrapper">
-          <ProgressRing percentage={pct} size={190} />
-          <div className="ring-inner-text">
-            {isComplete ? (
-              <>
-                <span className="ring-emoji">✅</span>
-                <span className="ring-label">完了！</span>
-              </>
-            ) : session.total_water_required_ml === 0 ? (
-              <>
-                <span className="ring-emoji">🍶</span>
-                <span className="ring-label">飲み始めよう</span>
-              </>
-            ) : (
-              <>
-                <span className="ring-remaining">
-                  {formatMl(session.remaining_water_ml)}
-                </span>
-                <span className="ring-label">残り必要量</span>
-              </>
-            )}
+        {session.total_water_required_ml === 0 ? (
+          <div className="water-glasses-empty">
+            <span className="glasses-empty-emoji">🍶</span>
+            <p>お酒を記録して始めましょう</p>
           </div>
-        </div>
+        ) : (
+          <WaterGlasses remainingWaterMl={session.remaining_water_ml} />
+        )}
 
         <div className="stats-grid">
           <div className="stat-card stat-alcohol">

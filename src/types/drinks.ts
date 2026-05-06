@@ -126,21 +126,12 @@ export const ALCOHOLIC_DRINKS: AlcoholicDrink[] = [
     category: "spirits",
   },
   {
-    id: "wine_red",
-    name: "赤ワイン",
+    id: "wine",
+    name: "ワイン",
     emoji: "🍷",
     abv: 12,
     volume_ml: 120,
     color: "#9B2335",
-    category: "wine",
-  },
-  {
-    id: "wine_white",
-    name: "白ワイン",
-    emoji: "🥂",
-    abv: 12,
-    volume_ml: 120,
-    color: "#FCD34D",
     category: "wine",
   },
   {

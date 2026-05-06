@@ -80,6 +80,9 @@ function sessionReducer(
         drink.hydration_factor
       );
 
+      // 事前に水を稼ぐことはできないため、現在の残り必要水分量が上限
+      const effective_hydration = Math.min(hydration_ml, state.remaining_water_ml);
+
       const log: DrinkLog = {
         id: crypto.randomUUID(),
         timestamp: new Date(),
@@ -87,10 +90,10 @@ function sessionReducer(
         drink_id: drink.id,
         drink_name: drink.name,
         drink_emoji: drink.emoji,
-        hydration_ml,
+        hydration_ml: effective_hydration,
       };
 
-      const newConsumed = state.total_water_consumed_ml + hydration_ml;
+      const newConsumed = state.total_water_consumed_ml + effective_hydration;
       const remaining = Math.max(
         0,
         state.total_water_required_ml - newConsumed
