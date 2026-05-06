@@ -1,26 +1,607 @@
-@import "tailwindcss";
+/* ============================================================
+   グローバルスタイル - 二日酔い防止水分補給トラッカー
+   ダーク系グラスモーフィズムデザイン
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ---- リセット & カスタムプロパティ ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base: #080f1a;
+  --bg-surface: rgba(255, 255, 255, 0.05);
+  --bg-surface-hover: rgba(255, 255, 255, 0.09);
+  --border: rgba(255, 255, 255, 0.1);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+  --font: "Inter", var(--font-inter), system-ui, sans-serif;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --max-w: 480px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html,
+body {
+  height: 100%;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* グラデーション背景（デフォルト） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%,
+      rgba(59, 130, 246, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%,
+      rgba(16, 185, 129, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.8s ease;
+}
+
+/* ---- status-neutral: お酒なし（初期状態） ---- */
+.status-neutral ~ * body::before,
+body:has(.status-neutral)::before {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%,
+      rgba(59, 130, 246, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%,
+      rgba(16, 185, 129, 0.1) 0%, transparent 60%);
+}
+
+/* ---- status-warning: 水分ノルマが残っている（警告の黄色） ---- */
+body:has(.status-warning)::before {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 0%,
+      rgba(245, 158, 11, 0.30) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 80% 100%,
+      rgba(239, 68, 68, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 10% 60%,
+      rgba(251, 191, 36, 0.12) 0%, transparent 50%);
+}
+
+/* ---- status-complete: ノルマ達成（安心の青） ---- */
+body:has(.status-complete)::before {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 0%,
+      rgba(59, 130, 246, 0.30) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 80% 100%,
+      rgba(16, 185, 129, 0.20) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 10% 60%,
+      rgba(96, 165, 250, 0.12) 0%, transparent 50%);
+}
+
+/* ============================================================
+   レイアウト
+   ============================================================ */
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* ============================================================
+   ヘッダー
+   ============================================================ */
+.app-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8, 15, 26, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-inner {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.app-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon {
+  -webkit-text-fill-color: initial;
+  font-size: 1.3rem;
+}
+
+.app-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ============================================================
+   進捗セクション
+   ============================================================ */
+.progress-section {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.ring-wrapper {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-wrapper svg {
+  position: absolute;
+  inset: 0;
+}
+
+.ring-inner-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ring-remaining {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #60a5fa, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.ring-emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.ring-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* スタッツグリッド */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.stat-alcohol { border-top: 2px solid var(--accent-amber); }
+.stat-required { border-top: 2px solid var(--accent-blue); }
+.stat-consumed { border-top: 2px solid var(--accent-green); }
+
+/* ============================================================
+   タブ
+   ============================================================ */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin: 0 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-family: var(--font);
+}
+
+.tab-active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   飲料グリッド
+   ============================================================ */
+.drink-grid-section {
+  padding: 16px 20px;
+}
+
+.drink-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.drink-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s, box-shadow 0.2s;
+  font-family: var(--font);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  -webkit-tap-highlight-color: transparent;
+  border-top: 2px solid color-mix(in srgb, var(--card-color) 60%, transparent);
+}
+
+.drink-card:active {
+  transform: scale(0.95);
+  background: var(--bg-surface-hover);
+}
+
+.drink-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--card-color) 20%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.drink-card:hover::before {
+  opacity: 1;
+}
+
+/* リップルエフェクト */
+.drink-card.ripple::after {
+  content: "";
+  position: absolute;
+  width: 150%;
+  padding-bottom: 150%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--card-color) 40%, transparent),
+    transparent
+  );
+  animation: ripple-anim 0.6s ease-out forwards;
+}
+
+@keyframes ripple-anim {
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.drink-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.drink-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.drink-info {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.drink-water-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--card-color) 90%, white);
+  background: color-mix(in srgb, var(--card-color) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--card-color) 30%, transparent);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-top: 4px;
+}
+
+/* ============================================================
+   ログ
+   ============================================================ */
+.log-section {
+  padding: 0 20px 20px;
+  flex: 1;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.log-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.log-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-undo,
+.btn-reset {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-undo:active,
+.btn-reset:active {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.log-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.log-empty-icon {
+  font-size: 3rem;
+}
+
+.log-empty p {
+  font-size: 0.9rem;
+}
+
+.log-empty-sub {
+  font-size: 0.75rem !important;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.log-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  animation: slide-in 0.3s ease;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.log-item-alcohol {
+  border-left: 3px solid var(--accent-amber);
+}
+
+.log-item-hydration {
+  border-left: 3px solid var(--accent-blue);
+}
+
+.log-item-emoji {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.log-item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.log-item-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.log-item-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.log-item-amount {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   フッター
+   ============================================================ */
+.app-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.app-footer p {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   トースト通知
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--text-primary);
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  animation: toast-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* ============================================================
+   レスポンシブ
+   ============================================================ */
+@media (min-width: 480px) {
+  .app-container {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-base: #f0f4f8;
+    --bg-surface: rgba(255, 255, 255, 0.7);
+    --bg-surface-hover: rgba(255, 255, 255, 0.9);
+    --border: rgba(0, 0, 0, 0.08);
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+  }
+
+  body::before {
+    background: radial-gradient(
+        ellipse 80% 60% at 20% 0%,
+        rgba(59, 130, 246, 0.08) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 80% 100%,
+        rgba(16, 185, 129, 0.06) 0%,
+        transparent 60%
+      );
+  }
 }

@@ -1,0 +1,24 @@
+{
+  "name": "二日酔い防止トラッカー",
+  "short_name": "水分補給",
+  "description": "飲酒量に応じた水分補給量を管理するアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080f1a",
+  "theme_color": "#0F172A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["health", "lifestyle"],
+  "lang": "ja"
+}
