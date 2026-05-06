@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   description:
     "お酒を飲んだ量に応じて必要な水分補給量を自動計算。二日酔いを防ぐための水分管理アプリ。",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-512.png",
+    apple: "/icon-192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
